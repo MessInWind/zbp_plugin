@@ -9,7 +9,7 @@ import (
 func init() {
 	//群聊和私聊都会触发
 	zero.OnFullMatch("你好").SetBlock(true).FirstPriority().Handle(func(ctx *zero.Ctx) {
-		ctx.Send("你好，我是机器人 v0.0.5")
+		ctx.Send("你好，我是机器人 v0.0.6")
 	})
 
 	zero.OnKeyword("天气").SetBlock(true).FirstPriority().Handle(func(ctx *zero.Ctx) {

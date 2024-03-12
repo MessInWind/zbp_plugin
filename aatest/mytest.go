@@ -7,13 +7,17 @@ import (
 )
 
 func init() {
+	version := "v0.0.4"
+
 	//群聊和私聊都会触发
 	zero.OnFullMatch("你好").SetBlock(true).FirstPriority().Handle(func(ctx *zero.Ctx) {
 		ctx.Send("你好，我是机器人")
+		ctx.Send(fmt.Sprintf("当前版本：%s", version))
 	})
 
 	zero.OnKeyword("天气").SetBlock(true).FirstPriority().Handle(func(ctx *zero.Ctx) {
 		ctx.Send("今天的天气是晴天")
+		ctx.Send(fmt.Sprintf("当前版本：%s", version))
 	})
 
 	zero.OnRegex("^用法$").SetBlock(true).FirstPriority().Handle(func(ctx *zero.Ctx) {

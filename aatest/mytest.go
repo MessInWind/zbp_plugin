@@ -1,15 +1,17 @@
 package aatest
 
 import (
+	"database/sql"
 	"fmt"
 
+	_ "github.com/go-sql-driver/mysql"
 	zero "github.com/wdvxdr1123/ZeroBot"
 )
 
 func init() {
 	//群聊和私聊都会触发
 	zero.OnFullMatch("你好").SetBlock(true).FirstPriority().Handle(func(ctx *zero.Ctx) {
-		ctx.Send("你好，我是机器人 v0.0.6")
+		ctx.Send("你好，我是机器人 v0.0.7")
 	})
 
 	zero.OnKeyword("天气").SetBlock(true).FirstPriority().Handle(func(ctx *zero.Ctx) {
@@ -24,6 +26,23 @@ func init() {
 		if ctx.Event.MessageType == "private" {
 			qqID := ctx.Event.UserID
 			ctx.Send(fmt.Sprintf("你的QQ号是: %d", qqID))
+		} else {
+			ctx.Send("请私聊我(加好友)")
+		}
+	})
+	zero.OnFullMatch("查看数据库").SetBlock(true).FirstPriority().Handle(func(ctx *zero.Ctx) {
+		if ctx.Event.MessageType == "private" {
+			db, err := sql.Open("mysql", "root:root@tcp(47.236.248.235:3306)/testDB")
+			ctx.Send("正在连接数据库...")
+			if err != nil {
+				fmt.Println(err)
+				ctx.Send("连接数据库失败")
+				return
+			}
+			ctx.Send("连接数据库成功")
+			defer db.Close()
+		} else {
+			ctx.Send("请私聊我(加好友)")
 		}
 	})
 }

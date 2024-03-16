@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 	zero "github.com/wdvxdr1123/ZeroBot"
@@ -15,28 +16,29 @@ import (
 func init() {
 	//群聊和私聊都会触发
 	zero.OnFullMatch("你好").SetBlock(true).FirstPriority().Handle(func(ctx *zero.Ctx) {
-		ctx.Send("你好，我是机器人 v0.0.9")
+		ctx.Send("你好, 我是无尽人生Bot v0.1.0")
 	})
 
 	zero.OnKeyword("天气").SetBlock(true).FirstPriority().Handle(func(ctx *zero.Ctx) {
 		ctx.Send("今天的天气是晴天")
 	})
+	zero.OnFullMatch("账号注册教程").SetBlock(true).FirstPriority().Handle(func(ctx *zero.Ctx) {
+		ctx.Send("先加机器人好友，然后私聊机器人，输入 申请密钥 四个字，机器人会自动帮你申请。游戏账号是你的QQ号，密码是机器人发给你的密钥。")
+	})
 
 	zero.OnRegex("^用法$").SetBlock(true).FirstPriority().Handle(func(ctx *zero.Ctx) {
-		ctx.Send("用法：\n群聊:\n1. 你好\n2. 天气\n私聊:\n1. 查看qq号\n2. 查看数据库\n3. 查看密钥\n4. 申请密钥")
+		ctx.Send("------用法------\n" +
+			"1. 申请密钥\n" +
+			"2. 查看密钥\n" +
+			"3. 账号状态\n" +
+			"4. 上次登录时间" +
+			"5. 账号注册教程\n" +
+			"私聊先加机器人好友！")
 	})
 	//私聊时触发
-	zero.OnFullMatch("查看qq号").SetBlock(true).FirstPriority().Handle(func(ctx *zero.Ctx) {
+	zero.OnFullMatch("连接数据库").SetBlock(true).FirstPriority().Handle(func(ctx *zero.Ctx) {
 		if ctx.Event.MessageType == "private" {
-			qqID := ctx.Event.UserID
-			ctx.Send(fmt.Sprintf("你的QQ号是: %d", qqID))
-		} else {
-			ctx.Send("请私聊我(加好友)")
-		}
-	})
-	zero.OnFullMatch("查看数据库").SetBlock(true).FirstPriority().Handle(func(ctx *zero.Ctx) {
-		if ctx.Event.MessageType == "private" {
-			db, err := sql.Open("mysql", "root:root@tcp(47.236.248.235:3306)/testDB")
+			db, err := sql.Open("mysql", "ticketServer:ticketServer@tcp(47.236.248.235:53306)/testDB")
 			ctx.Send("正在连接数据库...")
 			if err != nil {
 				fmt.Println(err)
@@ -51,7 +53,7 @@ func init() {
 	})
 	zero.OnFullMatch("查看密钥").SetBlock(true).FirstPriority().Handle(func(ctx *zero.Ctx) {
 		if ctx.Event.MessageType == "private" {
-			db, err := sql.Open("mysql", "root:root@tcp(47.236.248.235:3306)/testDB")
+			db, err := sql.Open("mysql", "ticketServer:ticketServer@tcp(47.236.248.235:53306)/testDB")
 			ctx.Send("正在连接数据库...")
 			if err != nil {
 				fmt.Println(err)
@@ -86,7 +88,7 @@ func init() {
 	})
 	zero.OnFullMatch("申请密钥").SetBlock(true).FirstPriority().Handle(func(ctx *zero.Ctx) {
 		if ctx.Event.MessageType == "private" {
-			db, err := sql.Open("mysql", "root:root@tcp(47.236.248.235:3306)/testDB")
+			db, err := sql.Open("mysql", "ticketServer:ticketServer@tcp(47.236.248.235:53306)/testDB")
 			ctx.Send("正在连接数据库...")
 			if err != nil {
 				fmt.Println(err)
@@ -122,7 +124,7 @@ func init() {
 					req.Header.Set("Referer", "http://web.hyx520.asia/ticketServer/server.php")
 					req.Header.Set("Accept-Encoding", "gzip, deflate")
 					req.Header.Set("Host", "web.hyx520.asia")
-					req.Header.Set("Cookie", "ticketServer_cookie_password_hash=1710055413_3e088f97002df99b8f2235673381d7a3")
+					// req.Header.Set("Cookie", "ticketServer_cookie_password_hash=1710055413_3e088f97002df99b8f2235673381d7a3")
 
 					client := &http.Client{}
 					resp, err4 := client.Do(req)
@@ -169,6 +171,79 @@ func init() {
 
 			ctx.Send(fmt.Sprintf("你已申请过，你的登录密钥是: %s", loginKey))
 
+			defer db.Close()
+		} else {
+			ctx.Send("请私聊我(加好友)")
+		}
+	})
+	zero.OnFullMatch("账号状态").SetBlock(true).FirstPriority().Handle(func(ctx *zero.Ctx) {
+		if ctx.Event.MessageType == "private" {
+			db, err := sql.Open("mysql", "ticketServer:ticketServer@tcp(47.236.248.235:53306)/testDB")
+			ctx.Send("正在连接数据库...")
+			if err != nil {
+				fmt.Println(err)
+				ctx.Send("连接数据库失败, 请联系管理员")
+				return
+			}
+			ctx.Send("连接数据库成功")
+
+			qqID := ctx.Event.UserID
+			// ctx.Send(fmt.Sprintf("你的QQ号是: %d", qqID))
+
+			row := db.QueryRow("SELECT blocked FROM ticketServer_tickets WHERE email = ?", qqID)
+			var blocked int8
+			err2 := row.Scan(&blocked)
+			if err2 != nil {
+				if err2 == sql.ErrNoRows {
+					// 没有找到匹配的记录
+					ctx.Send("你还未申请密钥, 请先申请密钥")
+				} else {
+					// 数据库错误
+					fmt.Println(err)
+					ctx.Send("查询数据库失败, 请联系管理员")
+				}
+				return
+			}
+			if blocked == 1 {
+				ctx.Send("你的账号已被封禁")
+				ctx.Send("若误封，请联系管理员解封")
+			} else {
+				ctx.Send("你的账号信用记录正常")
+			}
+			defer db.Close()
+		} else {
+			ctx.Send("请私聊我(加好友)")
+		}
+	})
+	zero.OnFullMatch("上次登录时间").SetBlock(true).FirstPriority().Handle(func(ctx *zero.Ctx) {
+		if ctx.Event.MessageType == "private" {
+			db, err := sql.Open("mysql", "ticketServer:ticketServer@tcp(47.236.248.235:53306)/testDB")
+			ctx.Send("正在连接数据库...")
+			if err != nil {
+				fmt.Println(err)
+				ctx.Send("连接数据库失败, 请联系管理员")
+				return
+			}
+			ctx.Send("连接数据库成功")
+
+			qqID := ctx.Event.UserID
+			// ctx.Send(fmt.Sprintf("你的QQ号是: %d", qqID))
+
+			row := db.QueryRow("SELECT last_activity FROM ticketServer_tickets WHERE email = ?", qqID)
+			var last_activity time.Time
+			err2 := row.Scan(&last_activity)
+			if err2 != nil {
+				if err2 == sql.ErrNoRows {
+					// 没有找到匹配的记录
+					ctx.Send("你还未申请密钥, 请先申请密钥")
+				} else {
+					// 数据库错误
+					fmt.Println(err)
+					ctx.Send("查询数据库失败, 请联系管理员")
+				}
+				return
+			}
+			ctx.Send(fmt.Sprintf("你上次登录时间是: %s", last_activity.Format("2006-01-02 15:04:05")))
 			defer db.Close()
 		} else {
 			ctx.Send("请私聊我(加好友)")

@@ -16,7 +16,7 @@ import (
 func init() {
 	//群聊和私聊都会触发
 	zero.OnFullMatch("你好").SetBlock(true).FirstPriority().Handle(func(ctx *zero.Ctx) {
-		ctx.Send("你好, 我是无尽人生Bot v0.1.0")
+		ctx.Send("你好, 我是无尽人生Bot v0.1.1")
 	})
 
 	zero.OnKeyword("天气").SetBlock(true).FirstPriority().Handle(func(ctx *zero.Ctx) {
@@ -31,7 +31,7 @@ func init() {
 			"1. 申请密钥\n" +
 			"2. 查看密钥\n" +
 			"3. 账号状态\n" +
-			"4. 上次登录时间" +
+			"4. 上次登录时间\n" +
 			"5. 账号注册教程\n" +
 			"私聊先加机器人好友！")
 	})
@@ -238,7 +238,7 @@ func init() {
 					ctx.Send("你还未申请密钥, 请先申请密钥")
 				} else {
 					// 数据库错误
-					fmt.Println(err)
+					fmt.Println(err2)
 					ctx.Send("查询数据库失败, 请联系管理员")
 				}
 				return

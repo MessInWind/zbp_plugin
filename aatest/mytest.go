@@ -7,16 +7,16 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
-	null "github.com/volatiletech/null/v8"
 	zero "github.com/wdvxdr1123/ZeroBot"
 )
 
 func init() {
 	//群聊和私聊都会触发
 	zero.OnFullMatch("你好").SetBlock(true).FirstPriority().Handle(func(ctx *zero.Ctx) {
-		ctx.Send("你好, 我是无尽人生Bot v0.1.2")
+		ctx.Send("你好, 我是无尽人生Bot v0.1.3")
 	})
 
 	zero.OnKeyword("天气").SetBlock(true).FirstPriority().Handle(func(ctx *zero.Ctx) {
@@ -229,7 +229,7 @@ func init() {
 			qqID := ctx.Event.UserID
 
 			row := db.QueryRow("SELECT last_activity FROM ticketServer_tickets WHERE email = ?", qqID)
-			var lastActivity null.Time
+			var lastActivity string
 			err2 := row.Scan(&lastActivity)
 			if err2 != nil {
 				if err2 == sql.ErrNoRows {
@@ -242,11 +242,15 @@ func init() {
 				}
 				return
 			}
-			if lastActivity.Valid {
-				ctx.Send(fmt.Sprintf("你上次登录时间是: %s", lastActivity.Time.Format("2006-01-02 15:04:05")))
-			} else {
-				ctx.Send("你还未登录过")
+
+			lastActivityTime, err3 := time.Parse("2006-01-02 15:04:05", lastActivity)
+			if err3 != nil {
+				// 处理错误
+				fmt.Println(err3)
+				ctx.Send("解析时间失败, 请联系管理员")
 			}
+
+			ctx.Send(fmt.Sprintf("你上次登录时间是: %s", lastActivityTime.Format("2006-01-02 15:04:05")))
 			defer db.Close()
 		} else {
 			ctx.Send("请私聊我(加好友)")

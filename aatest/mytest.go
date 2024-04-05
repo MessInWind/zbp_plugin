@@ -16,7 +16,7 @@ import (
 func init() {
 	//群聊和私聊都会触发
 	zero.OnFullMatch("你好").SetBlock(true).FirstPriority().Handle(func(ctx *zero.Ctx) {
-		ctx.Send("你好, 我是无尽人生Bot v0.1.3")
+		ctx.Send("你好, 我是无尽人生Bot v0.1.4")
 	})
 
 	zero.OnKeyword("天气").SetBlock(true).FirstPriority().Handle(func(ctx *zero.Ctx) {
@@ -113,7 +113,7 @@ func init() {
 					data.Set("email", strconv.FormatInt(qqID, 10))
 					data.Set("tags", "april_9")
 
-					req, err3 := http.NewRequest("POST", "http://web.hyx520.asia/ticketServer/server.php?action=sell_ticket", strings.NewReader(data.Encode()))
+					req, err3 := http.NewRequest("POST", "http://web.twohoursonelife.cn/ticketServer/server.php?action=sell_ticket", strings.NewReader(data.Encode()))
 					if err3 != nil {
 						fmt.Println(err3)
 						ctx.Send("http请求失败, 请联系管理员")
@@ -121,9 +121,9 @@ func init() {
 					}
 
 					req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-					req.Header.Set("Referer", "http://web.hyx520.asia/ticketServer/server.php")
+					req.Header.Set("Referer", "http://web.twohoursonelife.cn/ticketServer/server.php")
 					req.Header.Set("Accept-Encoding", "gzip, deflate")
-					req.Header.Set("Host", "web.hyx520.asia")
+					req.Header.Set("Host", "web.twohoursonelife.cn")
 					// req.Header.Set("Cookie", "ticketServer_cookie_password_hash=1710055413_3e088f97002df99b8f2235673381d7a3")
 
 					client := &http.Client{}

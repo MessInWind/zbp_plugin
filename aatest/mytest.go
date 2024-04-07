@@ -178,7 +178,7 @@ func init() {
 	})
 	zero.OnFullMatch("账号状态").SetBlock(true).FirstPriority().Handle(func(ctx *zero.Ctx) {
 		if ctx.Event.MessageType == "private" {
-			db, err := sql.Open("mysql", "ticketServer:ticketServer@tcp(47.236.248.235:53306)/testDB")
+			db, err := sql.Open("mysql", "ticketServer:ticketServer@tcp(web.twohoursonelife.cn:53306)/testDB")
 			ctx.Send("正在连接数据库...")
 			if err != nil {
 				fmt.Println(err)

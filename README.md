@@ -1,3 +1,3 @@
 plugins for ZeroBot
-- import them into the main.go
+- import plugin into main.go
 
